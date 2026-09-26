@@ -55,14 +55,14 @@ def upload_image_to_s3(file_bytes: bytes, content_type: str = "image/jpeg") -> s
     """
 
     bucket_name = os.getenv("AWS_BUCKET_NAME", "city-watch-reports")
-    endpoint_url = os.getenv("AWS_ENDPOINT_URL_S3") or os.getenv("AWS_ENDPOINT_URL", "http://localhost:9000")
+    endpoint_url = os.getenv("AWS_ENDPOINT_URL_S3") or os.getenv("AWS_ENDPOINT_URL")
     public_url_base = os.getenv("AWS_PUBLIC_URL_BASE")
 
     prefix = DIRECTORY.strip("/")
     unique_key = f"{prefix}/{uuid.uuid4().hex}.jpg" if prefix else f"{uuid.uuid4().hex}.jpg"
     client = get_s3_client()
 
-    # 3. Send the file over the network to MinIO
+    # Send the file over the network to S3 / Neon Object Storage
     try:
         client.put_object(
             Bucket=bucket_name,

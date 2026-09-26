@@ -4,8 +4,8 @@ Backend API for City Watch, built with FastAPI, SQLModel, and Postgres.
 
 ## Prerequisites
 
-- Python 3.14 (see `.python-version`)
-- Docker + Docker Compose (Postgres and MinIO run as containers)
+- Python 3.12+ (see `.python-version`)
+- Neon project configured with Postgres & Object Storage (or optional Docker for local Postgres)
 
 ## Local setup
 
@@ -15,7 +15,7 @@ Backend API for City Watch, built with FastAPI, SQLModel, and Postgres.
 cp .env.example .env
 ```
 
-Fill in `GEMINI_API_KEY` and `GEOAPIFY_API_KEY`; the rest of the defaults work as-is for local development.
+Fill in `GEMINI_API_KEY`, `GEOAPIFY_API_KEY`, and your Neon credentials (`DATABASE_URL`, `AWS_*` storage keys).
 
 **2. Install dependencies & git hooks**
 
@@ -23,9 +23,9 @@ Fill in `GEMINI_API_KEY` and `GEOAPIFY_API_KEY`; the rest of the defaults work a
 python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt && pre-commit install
 ```
 
-**3. Start the backing services**
+**3. Backing services**
 
-Brings up Postgres on `:5432` and MinIO on `:9000` (console on `:9001`), and creates the report bucket.
+Database and Object Storage are provisioned in Neon (`neon.ts`). If you prefer running a local Postgres container instead, run:
 
 ```bash
 docker compose up -d
@@ -89,5 +89,5 @@ See `.env.example`:
 - `GEOAPIFY_API_KEY` — API key for Geoapify geocoding.
 - `DATABASE_URL` — Pooled PostgreSQL connection string used by the app.
 - `DATABASE_URL_UNPOOLED` — Direct PostgreSQL connection string used by Alembic migrations.
-- `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `AWS_BUCKET_NAME`, `AWS_ENDPOINT_URL_S3` — S3-compatible storage config (Neon Object Storage or local MinIO).
+- `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `AWS_BUCKET_NAME`, `AWS_ENDPOINT_URL_S3` — S3-compatible storage config for Neon Object Storage.
 - `REDIS_URL` — Rate-limit storage. Optional; without it slowapi keeps counters in process memory.
