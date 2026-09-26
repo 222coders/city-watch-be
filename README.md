@@ -17,10 +17,10 @@ cp .env.example .env
 
 Fill in `GEMINI_API_KEY` and `GEOAPIFY_API_KEY`; the rest of the defaults work as-is for local development.
 
-**2. Install dependencies**
+**2. Install dependencies & git hooks**
 
 ```bash
-python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt
+python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt && pre-commit install
 ```
 
 **3. Start the backing services**
@@ -87,8 +87,7 @@ See `.env.example`:
 
 - `GEMINI_API_KEY` — API key for Gemini.
 - `GEOAPIFY_API_KEY` — API key for Geoapify geocoding.
-- `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` — Docker database config.
-- `DATABASE_URL` — SQLAlchemy connection string used by the app and by Alembic.
-- `REDIS_URL` — rate-limit storage. Optional; without it slowapi keeps counters in process memory.
-- `MINIO_ROOT_USER`, `MINIO_ROOT_PASSWORD` — credentials for the local MinIO container.
-- `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `AWS_BUCKET_NAME`, `AWS_ENDPOINT_URL`, `AWS_PUBLIC_URL_BASE` — boto3 storage config, pointed at MinIO locally.
+- `DATABASE_URL` — Pooled PostgreSQL connection string used by the app.
+- `DATABASE_URL_UNPOOLED` — Direct PostgreSQL connection string used by Alembic migrations.
+- `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `AWS_BUCKET_NAME`, `AWS_ENDPOINT_URL_S3` — S3-compatible storage config (Neon Object Storage or local MinIO).
+- `REDIS_URL` — Rate-limit storage. Optional; without it slowapi keeps counters in process memory.
