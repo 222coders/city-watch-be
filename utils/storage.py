@@ -23,10 +23,10 @@ def get_s3_client():
     access key, secret key, and region name from environment variables.
     """
 
-    endpoint_url = os.getenv("AWS_ENDPOINT_URL")
+    endpoint_url = os.getenv("AWS_ENDPOINT_URL_S3") or os.getenv("AWS_ENDPOINT_URL")
     access_key = os.getenv("AWS_ACCESS_KEY_ID")
     secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
-    region_name = os.getenv("AWS_REGION", "us-east-1")
+    region_name = os.getenv("AWS_REGION", "us-east-2")
 
     client_kwargs = {
         "service_name": "s3",
@@ -34,6 +34,7 @@ def get_s3_client():
         "config": Config(
             signature_version="s3v4",
             retries={"max_attempts": 3, "mode": "standard"},
+            s3={"addressing_style": "path"},
         ),
     }
 
@@ -54,7 +55,7 @@ def upload_image_to_s3(file_bytes: bytes, content_type: str = "image/jpeg") -> s
     """
 
     bucket_name = os.getenv("AWS_BUCKET_NAME", "city-watch-reports")
-    endpoint_url = os.getenv("AWS_ENDPOINT_URL", "http://localhost:9000")
+    endpoint_url = os.getenv("AWS_ENDPOINT_URL_S3") or os.getenv("AWS_ENDPOINT_URL", "http://localhost:9000")
     public_url_base = os.getenv("AWS_PUBLIC_URL_BASE")
 
     prefix = DIRECTORY.strip("/")

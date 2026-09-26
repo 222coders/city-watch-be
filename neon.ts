@@ -2,9 +2,7 @@ import { defineConfig } from "@neon/config/v1";
 
 export default defineConfig({
   auth: true,
-  preview: {
-    buckets: {
-      incidents: { access: "private" },
-    },
+  buckets: {
+    "city-watch-reports": { access: "public_read" },
   },
 });
