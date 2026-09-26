@@ -23,13 +23,22 @@ Fill in `GEMINI_API_KEY`, `GEOAPIFY_API_KEY`, and your Neon credentials (`DATABA
 python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt && pre-commit install
 ```
 
-**3. Backing services**
+**3. Database setup**
 
-Database and Object Storage are provisioned in Neon (`neon.ts`). If you prefer running a local Postgres container instead, run:
+You can connect to **Neon Cloud** or run a **Local Docker container**:
 
-```bash
-docker compose up -d
-```
+* **Option A: Neon Cloud (Recommended)**
+  Link your branch with `neon link` or set `DATABASE_URL` and `DATABASE_URL_UNPOOLED` in `.env`. No Docker required.
+
+* **Option B: Local Docker Postgres**
+  Start the local database container:
+  ```bash
+  docker compose up -d
+  ```
+  And set your `.env` to:
+  ```ini
+  DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5432/citywatch
+  ```
 
 **4. Apply migrations and seed data**
 
@@ -87,7 +96,8 @@ See `.env.example`:
 
 - `GEMINI_API_KEY` — API key for Gemini.
 - `GEOAPIFY_API_KEY` — API key for Geoapify geocoding.
-- `DATABASE_URL` — Pooled PostgreSQL connection string used by the app.
-- `DATABASE_URL_UNPOOLED` — Direct PostgreSQL connection string used by Alembic migrations.
+- `DATABASE_URL` — PostgreSQL connection string (Neon pooled connection or local Docker).
+- `DATABASE_URL_UNPOOLED` — Direct PostgreSQL connection string for Alembic migrations on Neon.
+- `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` — Optional Docker database credentials for local container.
 - `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `AWS_BUCKET_NAME`, `AWS_ENDPOINT_URL_S3` — S3-compatible storage config for Neon Object Storage.
 - `REDIS_URL` — Rate-limit storage. Optional; without it slowapi keeps counters in process memory.
