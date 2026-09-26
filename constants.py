@@ -1,5 +1,7 @@
+from datetime import UTC, datetime
+
 from db.enums import MarkerCategory, MarkerUrgency
-from datetime import datetime,UTC
+
 GEMINI_REPORT_CREATE_PROMPT = f"""
 You are a sophisticated AI agent designed to process real-time incident reports.
 Your primary function is to analyze a user's description of a situation,

@@ -4,8 +4,8 @@ Backend API for City Watch, built with FastAPI, SQLModel, and Postgres.
 
 ## Prerequisites
 
-- Python 3.14 (see `.python-version`)
-- Docker + Docker Compose (Postgres and MinIO run as containers)
+- Python 3.12+ (see `.python-version`)
+- Neon project configured with Postgres & Object Storage (or optional Docker for local Postgres)
 
 ## Local setup
 
@@ -15,21 +15,30 @@ Backend API for City Watch, built with FastAPI, SQLModel, and Postgres.
 cp .env.example .env
 ```
 
-Fill in `GEMINI_API_KEY` and `GEOAPIFY_API_KEY`; the rest of the defaults work as-is for local development.
+Fill in `GEMINI_API_KEY`, `GEOAPIFY_API_KEY`, and your Neon credentials (`DATABASE_URL`, `AWS_*` storage keys).
 
-**2. Install dependencies**
-
-```bash
-python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt
-```
-
-**3. Start the backing services**
-
-Brings up Postgres on `:5432` and MinIO on `:9000` (console on `:9001`), and creates the report bucket.
+**2. Install dependencies & git hooks**
 
 ```bash
-docker compose up -d
+python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt && pre-commit install
 ```
+
+**3. Database setup**
+
+You can connect to **Neon Cloud** or run a **Local Docker container**:
+
+* **Option A: Neon Cloud (Recommended)**
+  Link your branch with `neon link` or set `DATABASE_URL` and `DATABASE_URL_UNPOOLED` in `.env`. No Docker required.
+
+* **Option B: Local Docker Postgres**
+  Start the local database container:
+  ```bash
+  docker compose up -d
+  ```
+  And set your `.env` to:
+  ```ini
+  DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5432/citywatch
+  ```
 
 **4. Apply migrations and seed data**
 
@@ -87,8 +96,8 @@ See `.env.example`:
 
 - `GEMINI_API_KEY` — API key for Gemini.
 - `GEOAPIFY_API_KEY` — API key for Geoapify geocoding.
-- `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` — Docker database config.
-- `DATABASE_URL` — SQLAlchemy connection string used by the app and by Alembic.
-- `REDIS_URL` — rate-limit storage. Optional; without it slowapi keeps counters in process memory.
-- `MINIO_ROOT_USER`, `MINIO_ROOT_PASSWORD` — credentials for the local MinIO container.
-- `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `AWS_BUCKET_NAME`, `AWS_ENDPOINT_URL`, `AWS_PUBLIC_URL_BASE` — boto3 storage config, pointed at MinIO locally.
+- `DATABASE_URL` — PostgreSQL connection string (Neon pooled connection or local Docker).
+- `DATABASE_URL_UNPOOLED` — Direct PostgreSQL connection string for Alembic migrations on Neon.
+- `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` — Optional Docker database credentials for local container.
+- `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `AWS_BUCKET_NAME`, `AWS_ENDPOINT_URL_S3` — S3-compatible storage config for Neon Object Storage.
+- `REDIS_URL` — Rate-limit storage. Optional; without it slowapi keeps counters in process memory.

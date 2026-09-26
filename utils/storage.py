@@ -23,10 +23,10 @@ def get_s3_client():
     access key, secret key, and region name from environment variables.
     """
 
-    endpoint_url = os.getenv("AWS_ENDPOINT_URL")
+    endpoint_url = os.getenv("AWS_ENDPOINT_URL_S3") or os.getenv("AWS_ENDPOINT_URL")
     access_key = os.getenv("AWS_ACCESS_KEY_ID")
     secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
-    region_name = os.getenv("AWS_REGION", "us-east-1")
+    region_name = os.getenv("AWS_REGION", "us-east-2")
 
     client_kwargs = {
         "service_name": "s3",
@@ -34,6 +34,7 @@ def get_s3_client():
         "config": Config(
             signature_version="s3v4",
             retries={"max_attempts": 3, "mode": "standard"},
+            s3={"addressing_style": "path"},
         ),
     }
 
@@ -54,14 +55,14 @@ def upload_image_to_s3(file_bytes: bytes, content_type: str = "image/jpeg") -> s
     """
 
     bucket_name = os.getenv("AWS_BUCKET_NAME", "city-watch-reports")
-    endpoint_url = os.getenv("AWS_ENDPOINT_URL", "http://localhost:9000")
+    endpoint_url = os.getenv("AWS_ENDPOINT_URL_S3") or os.getenv("AWS_ENDPOINT_URL")
     public_url_base = os.getenv("AWS_PUBLIC_URL_BASE")
 
     prefix = DIRECTORY.strip("/")
     unique_key = f"{prefix}/{uuid.uuid4().hex}.jpg" if prefix else f"{uuid.uuid4().hex}.jpg"
     client = get_s3_client()
 
-    # 3. Send the file over the network to MinIO
+    # Send the file over the network to S3 / Neon Object Storage
     try:
         client.put_object(
             Bucket=bucket_name,
@@ -78,4 +79,11 @@ def upload_image_to_s3(file_bytes: bytes, content_type: str = "image/jpeg") -> s
 
     if public_url_base:
         return f"{public_url_base.rstrip('/')}/{unique_key}"
-    return f"{endpoint_url.rstrip('/')}/{bucket_name}/{unique_key}"
+    if endpoint_url:
+        return f"{endpoint_url.rstrip('/')}/{bucket_name}/{unique_key}"
+
+    # Default to standard AWS S3 public URL format when no custom endpoint or CDN is set
+    region_name = os.getenv("AWS_REGION", "us-east-1")
+    if region_name == "us-east-1":
+        return f"https://{bucket_name}.s3.amazonaws.com/{unique_key}"
+    return f"https://{bucket_name}.s3.{region_name}.amazonaws.com/{unique_key}"

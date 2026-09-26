@@ -4,47 +4,21 @@ services:
     container_name: city_watch_db
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-citywatch}
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U $${POSTGRES_USER:-postgres} -d $${POSTGRES_DB:-citywatch}",
+        ]
       interval: 5s
       retries: 10
 
-  minio:
-    image: minio/minio:latest
-    container_name: city_watch_minio
-    restart: unless-stopped
-    ports:
-      - "9000:9000" # API port
-      - "9001:9001" # Web UI port
-    environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
-    command: server /data --console-address ":9001"
-    volumes:
-      - minio_data:/data
-
-  # Set up a MinIO bucket, set public read and download permissions
-  minio-setup:
-    image: minio/mc
-    container_name: city_watch_minio_setup
-    depends_on:
-      - minio
-    entrypoint: >
-      /bin/sh -c "
-      sleep 5;
-      /usr/bin/mc alias set myminio http://minio:9000 ${MINIO_ROOT_USER:-minioadmin} ${MINIO_ROOT_PASSWORD:-minioadmin};
-      /usr/bin/mc mb myminio/city-watch-reports --ignore-existing;
-      /usr/bin/mc anonymous set download myminio/city-watch-reports;
-      exit 0;
-      "
-
 volumes:
   postgres_data:
-  minio_data:
