@@ -13,7 +13,13 @@ from alembic import context
 config = context.config
 
 load_dotenv()
-db_url = os.environ.get("DATABASE_URL_UNPOOLED") or os.environ["DATABASE_URL"]
+db_url = os.environ.get("DATABASE_URL_UNPOOLED") or os.environ.get("DATABASE_URL")
+if not db_url:
+    raise RuntimeError(
+        "Neither DATABASE_URL_UNPOOLED nor DATABASE_URL is set or empty. "
+        "Please configure your database connection in your .env file."
+    )
+
 if db_url.startswith("postgresql://"):
     db_url = db_url.replace("postgresql://", "postgresql+psycopg://", 1)
 elif db_url.startswith("postgres://"):
