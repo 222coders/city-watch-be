@@ -79,4 +79,11 @@ def upload_image_to_s3(file_bytes: bytes, content_type: str = "image/jpeg") -> s
 
     if public_url_base:
         return f"{public_url_base.rstrip('/')}/{unique_key}"
-    return f"{endpoint_url.rstrip('/')}/{bucket_name}/{unique_key}"
+    if endpoint_url:
+        return f"{endpoint_url.rstrip('/')}/{bucket_name}/{unique_key}"
+
+    # Default to standard AWS S3 public URL format when no custom endpoint or CDN is set
+    region_name = os.getenv("AWS_REGION", "us-east-1")
+    if region_name == "us-east-1":
+        return f"https://{bucket_name}.s3.amazonaws.com/{unique_key}"
+    return f"https://{bucket_name}.s3.{region_name}.amazonaws.com/{unique_key}"
