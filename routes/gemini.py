@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+from datetime import UTC, datetime
 from functools import lru_cache
 
 from dotenv import load_dotenv
@@ -11,6 +12,7 @@ from pydantic import BaseModel, Field
 from sqlmodel import Session
 
 from constants import (
+    DEFAULT_LOCATION,
     GEMINI_MULTIMODAL_PROMPT,
     GEMINI_MULTIMODAL_RESPONSE_SCHEMA,
     GEMINI_REPORT_CREATE_PROMPT,
@@ -70,6 +72,12 @@ def _raise_structured_422(
     )
 
 
+def get_system_instruction(prompt_template: str) -> str:
+    current_time = datetime.now(UTC).strftime("%A, %B %d, %Y, %I:%M %p %Z")
+    default_location = os.getenv("DEFAULT_LOCATION", DEFAULT_LOCATION)
+    return prompt_template.replace("{{current_time}}", current_time).replace("{{default_location}}", default_location)
+
+
 @router.post("/submit-report-gemini")
 @limiter.limit("5/minute;30/hour")
 def submit_report_gemini(
@@ -80,11 +88,12 @@ def submit_report_gemini(
 ):
     try:
         user_content = f"<citizen_note>\n{body.description.strip()}\n</citizen_note>"
+        system_instruction = get_system_instruction(GEMINI_REPORT_CREATE_PROMPT)
         response = get_client().models.generate_content(
             model=GEMINI_MODEL,
             contents=user_content,
             config=types.GenerateContentConfig(
-                system_instruction=GEMINI_REPORT_CREATE_PROMPT,
+                system_instruction=system_instruction,
                 thinking_config=types.ThinkingConfig(thinking_budget=THINKING_BUDGET),
                 response_mime_type="application/json",
                 response_schema=GEMINI_RESPONSE_SCHEMA,
@@ -214,12 +223,13 @@ def submit_report_gemini_multimodal(
         user_note = description.strip() if description else "None provided."
         user_content = f"<citizen_note>\n{user_note}\n</citizen_note>"
         image_part = types.Part.from_bytes(data=clean_bytes, mime_type=output_mime)
+        system_instruction = get_system_instruction(GEMINI_MULTIMODAL_PROMPT)
 
         response = get_client().models.generate_content(
             model=GEMINI_MODEL,
             contents=[image_part, user_content],
             config=types.GenerateContentConfig(
-                system_instruction=GEMINI_MULTIMODAL_PROMPT,
+                system_instruction=system_instruction,
                 thinking_config=types.ThinkingConfig(thinking_budget=THINKING_BUDGET),
                 response_mime_type="application/json",
                 response_schema=GEMINI_MULTIMODAL_RESPONSE_SCHEMA,
