@@ -127,6 +127,17 @@ GEMINI_RESPONSE_SCHEMA = {
     "required": ["report"],
 }
 
+# TODO: Re-enable incident validity checks in future:
+# - First, determine whether the image clearly depicts a genuine municipal incident,
+#     civic problem, hazard, or infrastructure defect (e.g., potholes, broken streetlights,
+#     graffiti, illegal dumping, flooding, road obstructions, vandalized property,
+#     safety threats).
+# - If the image is unrelated (e.g., a selfie, a pet, food, a meme, an empty wall,
+#     completely dark/blurry, or irrelevant), you MUST set `is_valid_incident` to false.
+#     You can leave the remaining fields empty.
+# - Only set `is_valid_incident` to true if a genuine civic incident is observable.
+
+
 GEMINI_MULTIMODAL_PROMPT = """
 You are a sophisticated AI agent designed to process real-time municipal incident reports based
 on an uploaded image and an optional text note from a citizen.
@@ -137,14 +148,7 @@ output a structured JSON report.
 ### Detailed Instructions:
 
 1. **Validity Check (`is_valid_incident`):**
-    - First, determine whether the image clearly depicts a genuine municipal incident,
-      civic problem, hazard, or infrastructure defect (e.g., potholes, broken streetlights,
-      graffiti, illegal dumping, flooding, road obstructions, vandalized property,
-      safety threats).
-    - If the image is unrelated (e.g., a selfie, a pet, food, a meme, an empty wall,
-      completely dark/blurry, or irrelevant), you MUST set `is_valid_incident` to false.
-      You can leave the remaining fields empty.
-    - Only set `is_valid_incident` to true if a genuine civic incident is observable.
+    - Always set `is_valid_incident` to true. 
 
 2. **Factual Grounding (DO NOT INVENT DETAILS):**
     - You must strictly describe what is visually observable in the image.
