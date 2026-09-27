@@ -1,8 +1,8 @@
-from datetime import UTC, datetime
-
 from db.enums import MarkerCategory, MarkerUrgency
 
-GEMINI_REPORT_CREATE_PROMPT = f"""
+DEFAULT_LOCATION = "Toronto, Ontario, Canada"
+
+GEMINI_REPORT_CREATE_PROMPT = """
 You are a sophisticated AI agent designed to process real-time incident reports.
 Your primary function is to analyze a user's description of a situation,
 extract key information, and structure it into a precise JSON object that
@@ -10,8 +10,8 @@ adheres strictly to the provided schema.
 **THIS MUST BE IN THE CONTEXT OF THE USER'S REPORT. DO NOT MAKE UP ANY INFORMATION.**
 
 **Contextual Information:**
-* **Current Date & Time:**  {datetime.now(UTC)}
-* **Default Location:** Toronto, Ontario, Canada (Use this to help resolve
+* **Current Date & Time:** {{current_time}}
+* **Default Location:** {{default_location}} (Use this to help resolve
   ambiguous locations if no other city is specified).
 
 You will analyze the user's input below and populate the following JSON fields based on these detailed instructions:
@@ -146,6 +146,11 @@ on an uploaded image and an optional text note from a citizen.
 
 Your task is to analyze the visual evidence in the image alongside the user's optional note and
 output a structured JSON report.
+
+**Contextual Information:**
+* **Current Date & Time:** {{current_time}}
+* **Default Location:** {{default_location}} (Use this to help resolve
+  ambiguous locations if no other city is specified).
 
 ### Detailed Instructions:
 
