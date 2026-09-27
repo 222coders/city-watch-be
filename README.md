@@ -96,6 +96,7 @@ See `.env.example`:
 
 - `GEMINI_API_KEY` — API key for Gemini.
 - `GEOAPIFY_API_KEY` — API key for Geoapify geocoding.
+- `DEFAULT_LOCATION` — Default city/region context for Gemini prompt resolution (optional, defaults to `Toronto, Ontario, Canada`).
 - `DATABASE_URL` — PostgreSQL connection string (Neon pooled connection or local Docker).
 - `DATABASE_URL_UNPOOLED` — Direct PostgreSQL connection string for Alembic migrations on Neon.
 - `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` — Optional Docker database credentials for local container.
